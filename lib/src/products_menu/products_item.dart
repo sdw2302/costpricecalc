@@ -1,5 +1,5 @@
-class ProductsItem{
-  const ProductsItem(this.id);
+class ProductsItem {
+  ProductsItem(this.title);
 
-  final int id;
+  String title;
 }
