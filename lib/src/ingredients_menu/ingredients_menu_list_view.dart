@@ -15,9 +15,16 @@ class IngredientsMenuListView extends StatefulWidget {
 }
 
 class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
-  List<IngredientsItem> items = List.empty(growable: true);
+  late List<IngredientsItem> items;
+
   int id = 0;
   TextEditingController _textFieldController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    items = List.from(widget.item.ingredientsList);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +33,7 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
         title: Text(widget.item.name),
       ),
       body: ListView.builder(
-        restorationId: 'sampleItemListView',
+        restorationId: 'ingredientsMenuListView',
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
           final item = items[index];
@@ -36,6 +43,7 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
             onDismissed: (_) {
               setState(() {
                 items.removeAt(index);
+                widget.item.ingredientsList.removeAt(index);
               });
             },
             background: Container(
@@ -94,6 +102,7 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
               onPressed: () {
                 setState(() {
                   items.add(IngredientsItem(id, _textFieldController.text));
+                  widget.item.ingredientsList.add(IngredientsItem(id, _textFieldController.text));
                 });
                 id++;
                 Navigator.pop(context);

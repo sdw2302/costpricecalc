@@ -34,7 +34,7 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
         ],
       ),
       body: ListView.builder(
-        restorationId: 'sampleItemListView',
+        restorationId: 'productsMenuListView',
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
           final item = items[index];
