@@ -1,3 +1,4 @@
+import 'package:costpricecalc/src/products_menu/products_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -69,14 +70,8 @@ class MyApp extends StatelessWidget {
               settings: routeSettings,
               builder: (BuildContext context) {
                 switch (routeSettings.name) {
-                  case IngredientsMenuListView.routeName:
-                    final args = routeSettings.arguments as Map<String, String>;
-                    final title = args['title'] ?? 'null';
-                    return IngredientsMenuListView(title: title);
                   case SettingsView.routeName:
                     return SettingsView(controller: settingsController);
-                  case SampleItemDetailsView.routeName:
-                    return const SampleItemDetailsView();
                   default:
                     return const ProductsMenuListView();
                 }

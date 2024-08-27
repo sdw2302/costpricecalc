@@ -66,9 +66,10 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
                 color: Colors.grey,
               ),
               onTap: () {
-                Navigator.restorablePushNamed(
-                    context, IngredientsMenuListView.routeName,
-                    arguments: {'title': item.name});
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => IngredientsMenuListView(item: item))
+                );
               },
             ),
           );
