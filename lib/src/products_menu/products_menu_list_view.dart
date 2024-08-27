@@ -1,3 +1,4 @@
+import 'package:costpricecalc/src/ingredients_menu/ingredients_menu_list_view.dart';
 import 'package:flutter/material.dart';
 
 import '../settings/settings_view.dart';
@@ -15,13 +16,14 @@ class ProductsMenuListView extends StatefulWidget {
 class _ProductsMenuListViewState extends State<ProductsMenuListView> {
   
   List<ProductsItem> items = List.empty(growable: true);
-    int i = 0;
+  int id = 0;
+  TextEditingController _textFieldController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sample Items'),
+        title: const Text('Products'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -55,7 +57,7 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
                 ),
               ),
             child: ListTile(
-              title: Text('SampleItem ${item.id}'),
+              title: Text(item.name),
               leading: const CircleAvatar(
                 foregroundImage: AssetImage('assets/images/flutter_logo.png'),
               ),
@@ -64,23 +66,59 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
                 color: Colors.grey,
               ),
               onTap:  () { 
-                /*
-                Navigator.restorablePushNamed(
-                  context,
-                  SampleItemDetailsView.routeName,
-                ); 
-                */
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(
+                    builder: (context) => IngredientsMenuListView(item: item)
+                  )
+                );
               },
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        setState(() {
-          items.add(ProductsItem(i));
-        });
-        i++;
-      }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _displayTextInputDialog(context);
+          });
+        },
+        child: const Icon(Icons.add),
+      ),
     );
+  }
+
+  Future<void> _displayTextInputDialog(BuildContext context) async{
+    _textFieldController.text = '';
+    return showDialog(
+      context: context, 
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Create a new product'),
+          content: TextField(
+            controller: _textFieldController,
+            decoration: const InputDecoration(hintText: 'Product Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              }, 
+              child: const Text('Cancel')
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  items.add(ProductsItem(id, _textFieldController.text));
+                });
+                id++;
+                Navigator.pop(context);
+              }, 
+              child: const Text('Create')
+            )
+          ],
+        );
+      }
+      );
   }
 }
