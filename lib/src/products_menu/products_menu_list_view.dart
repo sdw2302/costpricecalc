@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 
 import '../settings/settings_view.dart';
 import 'products_item.dart';
+import '../ingredients_menu/ingredients_menu_list_view.dart';
 
 class ProductsMenuListView extends StatefulWidget {
-  const ProductsMenuListView({ super.key });
+  const ProductsMenuListView({super.key});
 
   @override
   _ProductsMenuListViewState createState() => _ProductsMenuListViewState();
-  
+
   static const routeName = '/';
 }
 
 class _ProductsMenuListViewState extends State<ProductsMenuListView> {
-  
   List<ProductsItem> items = List.empty(growable: true);
   int id = 0;
   TextEditingController _textFieldController = TextEditingController();
@@ -47,15 +47,15 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
               });
             },
             background: Container(
-                color: Colors.red,
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                padding: const EdgeInsets.only(left: 15),
-                alignment: Alignment.centerLeft,
-                child: const Icon(  
-                  Icons.delete,
-                  color: Colors.white,
-                ),
+              color: Colors.red,
+              margin: const EdgeInsets.symmetric(horizontal: 15),
+              padding: const EdgeInsets.only(left: 15),
+              alignment: Alignment.centerLeft,
+              child: const Icon(
+                Icons.delete,
+                color: Colors.white,
               ),
+            ),
             child: ListTile(
               title: Text(item.name),
               leading: const CircleAvatar(
@@ -65,13 +65,10 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
                 Icons.arrow_right,
                 color: Colors.grey,
               ),
-              onTap:  () { 
-                Navigator.push(
-                  context, 
-                  MaterialPageRoute(
-                    builder: (context) => IngredientsMenuListView(item: item)
-                  )
-                );
+              onTap: () {
+                Navigator.restorablePushNamed(
+                    context, IngredientsMenuListView.routeName,
+                    arguments: {'title': item.name});
               },
             ),
           );

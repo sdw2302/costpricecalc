@@ -69,6 +69,10 @@ class MyApp extends StatelessWidget {
               settings: routeSettings,
               builder: (BuildContext context) {
                 switch (routeSettings.name) {
+                  case IngredientsMenuListView.routeName:
+                    final args = routeSettings.arguments as Map<String, String>;
+                    final title = args['title'] ?? 'null';
+                    return IngredientsMenuListView(title: title);
                   case SettingsView.routeName:
                     return SettingsView(controller: settingsController);
                   case SampleItemDetailsView.routeName:
