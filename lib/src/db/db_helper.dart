@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 2,
+      version: 4,
       onCreate: (db, version) {
         Future.wait([
           db.execute(
@@ -35,7 +35,7 @@ class DatabaseHelper {
         ]);
       },
       onUpgrade: (db, oldVersion, newVersion) {
-        if (oldVersion < 2) {
+        if (oldVersion < 4) {
           db.execute(
             'CREATE TABLE ingredients(id INTEGER PRIMARY KEY AUTOINCREMENT, product_id INTEGER, name TEXT, quantity REAL, unit TEXT, FOREIGN KEY(product_id) REFERENCES products(id))',
           );
@@ -54,41 +54,46 @@ class DatabaseHelper {
   }
 
   Future<List<ProductsItem>> getProducts() async {
-    final db = await database;
+  final db = await database;
 
-    final List<Map<String, dynamic>> productMaps = await db.query('products');
+  final List<Map<String, dynamic>> productMaps = await db.query('products');
 
-    List<ProductsItem> products = [];
+  List<ProductsItem> products = [];
 
-    for (var productMap in productMaps) {
-      final product = ProductsItem(
-        id: productMap['id'] as int,
-        name: productMap['name'] as String,
+  for (var productMap in productMaps) {
+    final product = ProductsItem(
+      id: productMap['id'] as int,
+      name: productMap['name'] as String,
+    );
+
+    final List<Map<String, dynamic>> ingredientMaps = await db.query(
+      'ingredients',
+      where: 'product_id = ?',
+      whereArgs: [product.id],
+    );
+
+    product.ingredientsList = List.generate(ingredientMaps.length, (i) {
+      return IngredientsItem(
+        id: ingredientMaps[i]['id'] as int,
+        name: ingredientMaps[i]['name'] as String,
+        quantity: ingredientMaps[i]['quantity'] as double,
+        unit: ingredientMaps[i]['unit'] as String,
       );
+    });
 
-      final List<Map<String, dynamic>> ingredientMaps = await db.query(
-        'ingredients',
-        where: 'product_id = ?',
-        whereArgs: [product.id],
-      );
-
-      product.ingredientsList = List.generate(ingredientMaps.length, (i) {
-        return IngredientsItem(
-          id: ingredientMaps[i]['id'] as int,
-          name: ingredientMaps[i]['name'] as String,
-          quantity: ingredientMaps[i]['quantity'] as double,
-          unit: ingredientMaps[i]['unit'] as String,
-        );
-      });
-
-      products.add(product);
-    }
-
-    return products;
+    products.add(product);
   }
+
+  return products;
+}
 
   Future<void> deleteProduct(int id) async {
     final db = await database;
+    await db.delete(
+      'ingredients',
+      where: 'product_Id = ?',
+      whereArgs: [id]
+    );
     await db.delete(
       'products',
       where: 'id = ?',
