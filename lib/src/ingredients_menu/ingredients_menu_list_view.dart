@@ -18,8 +18,8 @@ class IngredientsMenuListView extends StatefulWidget {
 class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
   List<IngredientsItem> items = List.empty(growable: true);
 
-  TextEditingController _nameFieldController = TextEditingController();
-  TextEditingController _quantityFieldController = TextEditingController();
+  final TextEditingController _nameFieldController = TextEditingController();
+  final TextEditingController _quantityFieldController = TextEditingController();
 
   @override
   void initState() {

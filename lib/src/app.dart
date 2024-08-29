@@ -1,14 +1,10 @@
-import 'package:costpricecalc/src/products_menu/products_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'sample_feature/sample_item_details_view.dart';
-import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 import 'products_menu/products_menu_list_view.dart';
-import 'ingredients_menu/ingredients_menu_list_view.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {

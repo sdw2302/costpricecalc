@@ -17,7 +17,7 @@ class ProductsMenuListView extends StatefulWidget {
 
 class _ProductsMenuListViewState extends State<ProductsMenuListView> {
   List<ProductsItem> items = List.empty(growable: true);
-  TextEditingController _textFieldController = TextEditingController();
+  final TextEditingController _textFieldController = TextEditingController();
 
   @override
   void initState() {
@@ -144,7 +144,7 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
             ),
             TextButton(
               onPressed: () async {
-                if (_textFieldController.text == null || _textFieldController.text.isEmpty) {
+                if (_textFieldController.text.isEmpty) {
                   showSnackBar('Field cannot be empty');
                 } else {
                   final newProduct = ProductsItem(name: _textFieldController.text);
@@ -175,5 +175,6 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
     if (value == null || value.isEmpty){
       return 'This field must not be empty';
     }
+    return null;
   }
 }
