@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../db/db_helper.dart';
 import '../products_menu/products_item.dart';
 import 'ingredients_item.dart';
 
 class IngredientsMenuListView extends StatefulWidget {
-  const IngredientsMenuListView({ super.key, required this.item});
+  const IngredientsMenuListView({ super.key, required this.item });
 
   final ProductsItem item;
 
@@ -15,16 +16,27 @@ class IngredientsMenuListView extends StatefulWidget {
 }
 
 class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
-  late List<IngredientsItem> items;
+  List<IngredientsItem> items = List.empty(growable: true);
 
-  int id = 0;
   TextEditingController _nameFieldController = TextEditingController();
   TextEditingController _quantityFieldController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    items = List.from(widget.item.ingredientsList);
+    _loadIngredients();
+  }
+
+  Future<void> _loadIngredients() async {
+    final productId = widget.item.id ?? -1;
+    if(productId != -1){
+      final ingredients = await DatabaseHelper().getIngredients(productId);
+      setState(() {
+        items = ingredients;
+      });
+    } else {
+      items = List.empty(growable: true);
+    }
   }
 
   @override
@@ -41,11 +53,12 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
           return Dismissible(
             key: UniqueKey(),
             direction: DismissDirection.startToEnd,
-            onDismissed: (_) {
-              setState(() {
-                items.removeAt(index);
-                widget.item.ingredientsList.removeAt(index);
-              });
+            onDismissed: (_) async {
+              int id = item.id ?? -1;
+              if(id != -1){
+                await DatabaseHelper().deleteIngredient(id);
+                _loadIngredients(); 
+              }// Reload ingredients to update the UI
             },
             background: Container(
               color: Colors.red,
@@ -71,7 +84,7 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
                     color: Colors.grey,
                   ),
                 ],
-              )
+              ),
             ),
           );
         },
@@ -88,99 +101,102 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
   }
 
   Future<void> _displayTextInputDialog(BuildContext context) async {
-  _nameFieldController.text = '';
-  _quantityFieldController.text = '';
-  String selectedUnit = 'g';
+    _nameFieldController.text = '';
+    _quantityFieldController.text = '';
+    String selectedUnit = 'g';
 
-  return showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Create a new ingredient'),
-        content: StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Form(
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  TextFormField(
-                    controller: _nameFieldController,
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.label),
-                      labelText: 'Ingredient',
-                      hintText: 'Ingredient name',
-                    ),
-                  ),
-                  TextFormField(
-                    controller: _quantityFieldController,
-                    decoration: InputDecoration(
-                      icon: const Icon(Icons.scale),
-                      labelText: 'Quantity',
-                      hintText: 'Quantity of ingredient needed',
-                      suffixIcon: DropdownButton<String>(
-                        value: selectedUnit,
-                        icon: const Icon(Icons.arrow_drop_down),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedUnit = newValue ?? 'g';
-                          });
-                        },
-                        items: <String>[
-                          'g', 'kg', 'l', 'ml', 'tbsp', 'tsp', 'pnch', 'pc/s'
-                        ].map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Create a new ingredient'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Form(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    TextFormField(
+                      controller: _nameFieldController,
+                      decoration: const InputDecoration(
+                        icon: Icon(Icons.label),
+                        labelText: 'Ingredient',
+                        hintText: 'Ingredient name',
                       ),
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
+                    TextFormField(
+                      controller: _quantityFieldController,
+                      decoration: InputDecoration(
+                        icon: const Icon(Icons.scale),
+                        labelText: 'Quantity',
+                        hintText: 'Quantity of ingredient needed',
+                        suffixIcon: DropdownButton<String>(
+                          value: selectedUnit,
+                          icon: const Icon(Icons.arrow_drop_down),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedUnit = newValue ?? 'g';
+                            });
+                          },
+                          items: <String>[
+                            'g', 'kg', 'l', 'ml', 'tbsp', 'tsp', 'pnch', 'pc/s'
+                          ].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ],
+                ),
+              );
             },
-            child: const Text('Cancel'),
           ),
-          TextButton(
-            onPressed: () {
-              try {
-                double value = double.parse(_quantityFieldController.text);
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  double value = double.parse(_quantityFieldController.text);
 
-                setState(() {
-                  items.add(IngredientsItem(id, _nameFieldController.text, value, selectedUnit));
-                });
+                  final newIngredient = IngredientsItem(
+                    name: _nameFieldController.text, 
+                    quantity: value, 
+                    unit: selectedUnit
+                  );
 
-                widget.item.ingredientsList.add(IngredientsItem(id, _nameFieldController.text, value, selectedUnit));
-                id++;
-              } catch (e) {
-                showSnackBar('An error occurred when creating the ingredient');
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Create'),
-          ),
-        ],
-      );
-    },
-  );
-}
+                  int id = widget.item.id ?? -1;
 
+                  if(id != -1){
+                    await DatabaseHelper().insertIngredient(id, newIngredient);
+                    _loadIngredients();
+                  }
+                  Navigator.pop(context);
+                } catch (e) {
+                  showSnackBar(e.toString());
+                }
+              },
+              child: const Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-  void showSnackBar(String message){
+  void showSnackBar(String message) {
     final messenger = ScaffoldMessenger.of(context);
-
     messenger.removeCurrentSnackBar();
-
     messenger.showSnackBar(
-      SnackBar(content: Text(message))
+      SnackBar(content: Text(message)),
     );
   }
 }

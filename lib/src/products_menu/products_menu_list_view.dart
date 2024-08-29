@@ -1,9 +1,10 @@
-import 'package:costpricecalc/src/ingredients_menu/ingredients_menu_list_view.dart';
+import 'package:costpricecalc/src/ingredients_menu/ingredients_item.dart';
 import 'package:flutter/material.dart';
 
 import '../settings/settings_view.dart';
 import 'products_item.dart';
 import '../ingredients_menu/ingredients_menu_list_view.dart';
+import '../db/db_helper.dart';
 
 class ProductsMenuListView extends StatefulWidget {
   const ProductsMenuListView({super.key});
@@ -16,8 +17,20 @@ class ProductsMenuListView extends StatefulWidget {
 
 class _ProductsMenuListViewState extends State<ProductsMenuListView> {
   List<ProductsItem> items = List.empty(growable: true);
-  int id = 0;
   TextEditingController _textFieldController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    final products = await DatabaseHelper().getProducts();
+    setState(() {
+      items = products;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +54,9 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
           return Dismissible(
             key: UniqueKey(),
             direction: DismissDirection.startToEnd,
-            onDismissed: (_) {
-              setState(() {
-                items.removeAt(index);
-              });
+            onDismissed: (_) async {
+              await DatabaseHelper().deleteProduct(item.id!);
+              _loadProducts();
             },
             background: Container(
               color: Colors.red,
@@ -74,11 +86,16 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
               onTap: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => IngredientsMenuListView(
-                    item: item
-                  ))
+                  MaterialPageRoute(builder: (context) => IngredientsMenuListView(item: item)),
                 );
-                setState(() {});
+                _loadProducts();
+              },
+              onLongPress: () {
+                String list = '';
+                for (IngredientsItem ingredient in item.ingredientsList) {
+                  list += '${ingredient.name} ';
+                }
+                showSnackBar(list);
               },
             ),
           );
@@ -126,19 +143,17 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
               child: const Text('Cancel')
             ),
             TextButton(
-              onPressed: () {
-                if(_textFieldController.text == null || _textFieldController.text.isEmpty) {
+              onPressed: () async {
+                if (_textFieldController.text == null || _textFieldController.text.isEmpty) {
                   showSnackBar('Field cannot be empty');
-                }
-                else {
-                  setState(() {
-                    items.add(ProductsItem(id, _textFieldController.text));
-                  });
-                  id++;
+                } else {
+                  final newProduct = ProductsItem(name: _textFieldController.text);
+                  await DatabaseHelper().insertProduct(newProduct);
+                  _loadProducts(); // Reload products to update the UI
                   Navigator.pop(context);
                 }
-              }, 
-              child: const Text('Create')
+              },
+              child: const Text('Create'),
             )
           ],
         );
