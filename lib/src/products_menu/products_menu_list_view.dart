@@ -61,15 +61,24 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
               leading: const CircleAvatar(
                 foregroundImage: AssetImage('assets/images/flutter_logo.png'),
               ),
-              trailing: const Icon(
-                Icons.arrow_right,
-                color: Colors.grey,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('${item.ingredientsList.length} ingredient/s'),
+                  const Icon(
+                    Icons.arrow_right,
+                    color: Colors.grey,
+                  ),
+                ],
               ),
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => IngredientsMenuListView(item: item))
+                  MaterialPageRoute(builder: (context) => IngredientsMenuListView(
+                    item: item
+                  ))
                 );
+                setState(() {});
               },
             ),
           );
@@ -93,9 +102,21 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Create a new product'),
-          content: TextField(
-            controller: _textFieldController,
-            decoration: const InputDecoration(hintText: 'Product Name'),
+          content: Form(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                TextFormField(
+                  decoration: const InputDecoration(
+                    icon: Icon(Icons.label),
+                    labelText: 'Product',
+                    hintText: 'Product name'
+                  ),
+                  controller: _textFieldController,
+                  validator: inputTextValidator,
+                )
+              ],
+            )
           ),
           actions: [
             TextButton(
@@ -106,17 +127,38 @@ class _ProductsMenuListViewState extends State<ProductsMenuListView> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  items.add(ProductsItem(id, _textFieldController.text));
-                });
-                id++;
-                Navigator.pop(context);
+                if(_textFieldController.text == null || _textFieldController.text.isEmpty) {
+                  showSnackBar('Field cannot be empty');
+                }
+                else {
+                  setState(() {
+                    items.add(ProductsItem(id, _textFieldController.text));
+                  });
+                  id++;
+                  Navigator.pop(context);
+                }
               }, 
               child: const Text('Create')
             )
           ],
         );
       }
-      );
+    );
+  }
+
+  void showSnackBar(String message){
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger.removeCurrentSnackBar();
+
+    messenger.showSnackBar(
+      SnackBar(content: Text(message))
+    );
+  }
+
+  String? inputTextValidator(String? value){
+    if (value == null || value.isEmpty){
+      return 'This field must not be empty';
+    }
   }
 }
