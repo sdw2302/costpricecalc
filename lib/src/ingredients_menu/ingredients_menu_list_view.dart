@@ -20,6 +20,7 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
 
   final TextEditingController _nameFieldController = TextEditingController();
   final TextEditingController _quantityFieldController = TextEditingController();
+  late double height;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
 
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.item.name),
@@ -97,6 +99,28 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
         },
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: Container(
+        height: height * 0.08,
+        color: Theme.of(context).secondaryHeaderColor,
+        child: SafeArea(
+          child: InkWell(
+            onTap: () {
+              if(items.isEmpty){
+                showSnackBar('There are no ingredients');
+                return;
+              }
+              showSnackBar('calc');
+            },
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.calculate),
+                Text('Calculate cost')
+              ],
+            ),
+          ),
+        ),
+      )
     );
   }
 
@@ -139,7 +163,7 @@ class _IngredientsMenuListViewState extends State<IngredientsMenuListView> {
                             });
                           },
                           items: <String>[
-                            'g', 'kg', 'l', 'ml', 'tbsp', 'tsp', 'pnch', 'pc/s'
+                            'g', 'kg', 'mg', 'l', 'ml', 'tbsp', 'tsp', 'pnch', 'pc/s'
                           ].map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
